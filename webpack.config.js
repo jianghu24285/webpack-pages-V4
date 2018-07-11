@@ -3,7 +3,7 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-10 01:57:22
+ * @Last Modified time: 2018-07-11 19:27:53
  */
 
 const path = require('path')
@@ -59,7 +59,7 @@ let config = {
         path: path.resolve(__dirname, 'static'), // 输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
         publicPath: '/', // 模板、样式、脚本、图片等资源对应的server上的路径
         filename: 'js/[name].js', // 每个页面对应的主js的生成配置
-        chunkFilename: 'js/[id].chunk.js' // chunk生成的配置
+        chunkFilename: 'js/[id].js' // chunk生成的配置
     },
     resolve: {
         //自动扩展文件后缀名，意味着我们require模块可以省略不写后缀名
@@ -87,7 +87,7 @@ let config = {
             // 处理less/css文件(从右到左依次调用less、css、style加载器，前一个的输出是后一个的输入)
             {
                 test: /\.(less|css)$/,
-                loader: ExtractTextPlugin.extract({
+                use: ExtractTextPlugin.extract({
                     fallback: 'style-loader',
                     use: ['css-loader', 'postcss-loader', 'less-loader']
                 })
@@ -153,15 +153,37 @@ let config = {
             jQuery: 'jquery'
         }),
         // 提取公共模块
-        new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendors', // 将公共模块提取，生成名为vendors的chunk
-            chunks: chunks, // 提取哪些模块共有的部分
-            minChunks: chunks.length // 被多少个模块公用的部分才提取
+        new webpack.optimize.SplitChunksPlugin({
+            cacheGroups: {
+                default: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true,
+                },
+                // 打包第三方库
+                vendor: {
+                    // test: /[\\/]node_modules[\\/]/,
+                    name: 'vendor',
+                    chunks: "all"
+                },
+                // 打包相同代码
+                common: {
+                    name: "common",
+                    chunks: 'initial',
+                    minChunks: 2,
+                    minSize: 0
+                }
+            }
         }),
         // 单独使用link标签加载css并设置路径，相对于output配置中的publickPath
-        new ExtractTextPlugin('css/[name].css'),
+        new ExtractTextPlugin({
+            filename: 'css/[name].css'
+        }),
         // 热加载
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        // new webpack.optimize.RuntimeChunkPlugin({
+        //     name: "manifest"
+        // })
     ]
 }
 
@@ -176,7 +198,7 @@ pages.forEach(function (fileName) {
     // (仅)有入口的模版自动引入资源
     if (fileName in config.entry) {
         setting.favicon = './src/assets/img/favicon.ico'
-        setting.chunks = ['vendors', fileName]
+        setting.chunks = ['vendor', 'common', fileName]
         setting.inject = 'body'
         setting.hash = true
     }
@@ -198,6 +220,10 @@ if (isProduction) {
                 beautify: false, // 不美化输出
                 comments: false   // 删除所有的注释
             }
+        }),
+        // 一些 library 可能针对具体用户的环境进行代码优化,从而删除或添加一些重要代码,所以添加这个配置
+        new webpack.DefinePlugin({
+            'process.env.NODE_ENV': JSON.stringify('production')
         })
     )
 }
