@@ -3,17 +3,19 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-12 00:03:03
+ * @Last Modified time: 2018-07-12 00:36:46
  */
 
 const path = require('path')
 const glob = require('glob')
 const webpack = require('webpack')
 // extract-text-webpack-plugin插件,将样式提取到单独的css文件里,而不是直接打包到js里.
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+// const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // html-webpack-plugin插件,重中之重,webpack中生成html的插件.
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
 
 const ROOT_PATH = path.resolve(__dirname)
 const SRC_PATH = path.resolve(ROOT_PATH, 'src')
@@ -87,10 +89,11 @@ let config = {
             // 处理less/css文件(从右到左依次调用less、css、style加载器，前一个的输出是后一个的输入)
             {
                 test: /\.(less|css)$/,
-                use: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: ['css-loader', 'postcss-loader', 'less-loader']
-                })
+                use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader']
+                // use: ExtractTextPlugin.extract({
+                //     fallback: 'style-loader',
+                //     use: ['css-loader', 'postcss-loader', 'less-loader']
+                // })
             },
             /**
              * es6转码
@@ -175,7 +178,7 @@ let config = {
             }
         }),
         // 单独使用link标签加载css并设置路径，相对于output配置中的publickPath
-        new ExtractTextPlugin({
+        new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
         // 热加载
@@ -206,23 +209,31 @@ if (isProduction) {
     config.devtool = false  // 关闭source-map
     config.plugins.push(
         // 代码压缩
-        new UglifyJsPlugin({
-            uglifyOptions: {
-                parallel: true, // 使用多进程并行和文件缓存来提高构建速度
-                compress: {
-                    drop_console: true,     // 删除所有的 `console` 语句
-                    warnings: false          // 在删除没有用到的代码时不输出警告
-                },
-                output: {
-                    beautify: false, // 不美化输出
-                    comments: false   // 删除所有的注释
-                }
-            }
-        }),
+        // new UglifyJsPlugin({
+        //     uglifyOptions: {
+        //         parallel: true, // 使用多进程并行和文件缓存来提高构建速度
+        //         compress: {
+        //             drop_console: true,     // 删除所有的 `console` 语句
+        //             warnings: false          // 在删除没有用到的代码时不输出警告
+        //         },
+        //         output: {
+        //             beautify: false, // 不美化输出
+        //             comments: false   // 删除所有的注释
+        //         }
+        //     }
+        // }),
         // 一些 library 可能针对具体用户的环境进行代码优化,从而删除或添加一些重要代码,所以添加这个配置
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify('production')
         })
+    )
+    config.optimization.minimizer.push(
+        new UglifyJsPlugin({
+            cache: true,
+            parallel: true,
+            sourceMap: false
+        }),
+        new OptimizeCSSAssetsPlugin({}) // use OptimizeCSSAssetsPlugin
     )
 }
 
