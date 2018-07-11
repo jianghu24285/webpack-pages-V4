@@ -3,7 +3,7 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-11 19:27:53
+ * @Last Modified time: 2018-07-12 00:03:03
  */
 
 const path = require('path')
@@ -13,6 +13,7 @@ const webpack = require('webpack')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 // html-webpack-plugin插件,重中之重,webpack中生成html的插件.
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const ROOT_PATH = path.resolve(__dirname)
 const SRC_PATH = path.resolve(ROOT_PATH, 'src')
@@ -59,7 +60,6 @@ let config = {
         path: path.resolve(__dirname, 'static'), // 输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
         publicPath: '/', // 模板、样式、脚本、图片等资源对应的server上的路径
         filename: 'js/[name].js', // 每个页面对应的主js的生成配置
-        chunkFilename: 'js/[id].js' // chunk生成的配置
     },
     resolve: {
         //自动扩展文件后缀名，意味着我们require模块可以省略不写后缀名
@@ -154,24 +154,23 @@ let config = {
         }),
         // 提取公共模块
         new webpack.optimize.SplitChunksPlugin({
+            chunks: "async",
+            minSize: 30000,
+            minChunks: 1,
+            maxAsyncRequests: 5,
+            maxInitialRequests: 3,
+            automaticNameDelimiter: '~',
+            name: true,
             cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    name: "vendors",
+                    chunks: "all"
+                },
                 default: {
                     minChunks: 2,
                     priority: -20,
-                    reuseExistingChunk: true,
-                },
-                // 打包第三方库
-                vendor: {
-                    // test: /[\\/]node_modules[\\/]/,
-                    name: 'vendor',
-                    chunks: "all"
-                },
-                // 打包相同代码
-                common: {
-                    name: "common",
-                    chunks: 'initial',
-                    minChunks: 2,
-                    minSize: 0
+                    reuseExistingChunk: true
                 }
             }
         }),
@@ -180,10 +179,7 @@ let config = {
             filename: 'css/[name].css'
         }),
         // 热加载
-        new webpack.HotModuleReplacementPlugin(),
-        // new webpack.optimize.RuntimeChunkPlugin({
-        //     name: "manifest"
-        // })
+        new webpack.HotModuleReplacementPlugin()
     ]
 }
 
@@ -198,7 +194,7 @@ pages.forEach(function (fileName) {
     // (仅)有入口的模版自动引入资源
     if (fileName in config.entry) {
         setting.favicon = './src/assets/img/favicon.ico'
-        setting.chunks = ['vendor', 'common', fileName]
+        setting.chunks = ['vendors', 'default', fileName]
         setting.inject = 'body'
         setting.hash = true
     }
@@ -210,15 +206,17 @@ if (isProduction) {
     config.devtool = false  // 关闭source-map
     config.plugins.push(
         // 代码压缩
-        new webpack.optimize.UglifyJsPlugin({
-            parallel: true, // 使用多进程并行和文件缓存来提高构建速度
-            compress: {
-                drop_console: true,     // 删除所有的 `console` 语句
-                warnings: false          // 在删除没有用到的代码时不输出警告
-            },
-            output: {
-                beautify: false, // 不美化输出
-                comments: false   // 删除所有的注释
+        new UglifyJsPlugin({
+            uglifyOptions: {
+                parallel: true, // 使用多进程并行和文件缓存来提高构建速度
+                compress: {
+                    drop_console: true,     // 删除所有的 `console` 语句
+                    warnings: false          // 在删除没有用到的代码时不输出警告
+                },
+                output: {
+                    beautify: false, // 不美化输出
+                    comments: false   // 删除所有的注释
+                }
             }
         }),
         // 一些 library 可能针对具体用户的环境进行代码优化,从而删除或添加一些重要代码,所以添加这个配置
