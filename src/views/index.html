@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>首页</title>
+
+    <!-- 描述：head中无需再引入css以及favicon，webpack将根据入口JS文件的要求自动实现按需加载或者生成style标签. -->
+  </head>
+  <body>
+    <div class="layout">
+      <header class="header header-top">
+        <p>首页</p>
+      </header>
+      <section class="content">
+        <div class="test-01">I have a dream</div>
+        <!-- 测试小于1000Byte的img,自动转换base64. -->
+        <img id="music_switch" class="html-img-small" src="../assets/img/menu_icon_04.png" alt="">
+        
+        <!-- 
+          1. 在html中引入的资源,如果直接在页面引入,需要通过html-loader来处理; 
+          2. 也可以不直接在页面引入,例如这里的music,可以在js中require,再用js写入src,webpack打包时可以处理. 
+        -->
+        <!-- <audio id="bg_music" src="../assets/music/dear.mp3"></audio> -->
+      </section>
+      <footer class="footer">
+        <div class="menu">
+          <a href="/views/list.html">列表</a>
+          <a href="/views/about.html">关于我们</a>
+        </div>
+      </footer>
+    </div>
+
+    <!-- 描述：body中同样无需单独引入JS文件，webpack会根据入口JS文件自动实现按需加载或者生成script标签，还可以生成对应的hash值. -->
+  </body>
+</html>

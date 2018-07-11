@@ -1,0 +1,41 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #eee;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  .header {
+    flex-grow: 0;
+    background-color: #f9f9f9;
+  }
+  .content {
+    flex-grow: 1;
+    overflow-x: hidden; 
+    overflow-y: auto; 
+    padding: 10px;
+    background-color: #fff;
+  }
+  .footer {
+    flex-grow: 0;
+    position: relative;
+    height: 50px;
+    background-color: #f8f8f8;
+    &:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 1px;
+      width: 100%;
+      background-color: #eee;
+    }
+  }
+}
+

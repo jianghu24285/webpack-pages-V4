@@ -1,0 +1,135 @@
+/* 
+ * Only mobile
+ * @Author: Eleven 
+ * @Date: 2018-07-02 14:00:18 
+ * @Last Modified by: Eleven
+ * @Last Modified time: 2018-07-03 18:17:19
+ */
+
+body,
+html {
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-user-select: none;
+  -webkit-overflow-scrolling: touch
+}
+
+a,
+body,
+center,
+cite,
+code,
+dd,
+del,
+div,
+dl,
+dt,
+em,
+fieldset,
+figcaption,
+figure,
+footer,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+header,
+hr,
+html,
+img,
+input,
+label,
+legend,
+li,
+mark,
+ol,
+p,
+section,
+span,
+strong,
+textarea,
+time,
+ul,
+var {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font-style: normal
+}
+
+article,
+aside,
+details,
+dialog,
+fieldset,
+figcaption,
+figure,
+footer,
+header,
+main,
+menu,
+nav,
+section {
+  display: block
+}
+
+a,
+button,
+cite,
+code,
+del,
+em,
+img,
+label,
+mark,
+small,
+strong,
+textarea,
+time,
+var {
+  display: inline-block
+}
+
+ol,
+ul {
+  list-style: none
+}
+
+button,
+input,
+textarea {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font-size: 1em
+}
+
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+  -webkit-appearance: none
+}
+
+a:active {
+  outline: 0
+}
+
+a,
+a:visited {
+  text-decoration: none
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0
+}
+
+td,
+th {
+  padding: 0
+}

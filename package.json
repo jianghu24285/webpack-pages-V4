@@ -1,0 +1,41 @@
+{
+  "name": "webpack-pages-02",
+  "version": "1.0.0",
+  "description": "多页面webpack打包,自动扫描打包入口和html文件,模块化组织代码.",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "rm -rf ./static/* && cross-env NODE_ENV=development webpack -w --colors --profile",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --inline --colors",
+    "build": "rm -rf ./static/* && cross-env NODE_ENV=production webpack --colors --profile"
+  },
+  "author": "Eleven",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^8.6.5",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-stage-2": "^6.24.1",
+    "babel-runtime": "^6.26.0",
+    "cross-env": "^5.2.0",
+    "css-loader": "^0.28.11",
+    "cssnano": "^4.0.0",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.11",
+    "glob": "^7.1.2",
+    "html-loader": "^0.5.5",
+    "html-webpack-plugin": "^3.2.0",
+    "jquery": "^3.3.1",
+    "less": "^3.0.4",
+    "less-loader": "^4.1.0",
+    "postcss-cssnext": "^3.1.0",
+    "postcss-import": "^11.1.0",
+    "postcss-loader": "^2.1.5",
+    "style-loader": "^0.21.0",
+    "url-loader": "^1.0.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.7"
+  }
+}
