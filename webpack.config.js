@@ -3,19 +3,16 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-12 00:36:46
+ * @Last Modified time: 2018-07-12 19:31:56
  */
 
 const path = require('path')
 const glob = require('glob')
 const webpack = require('webpack')
-// extract-text-webpack-plugin插件,将样式提取到单独的css文件里,而不是直接打包到js里.
-// const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-// html-webpack-plugin插件,重中之重,webpack中生成html的插件.
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin")
+const CleanPlugin = require('clean-webpack-plugin')
 
 const ROOT_PATH = path.resolve(__dirname)
 const SRC_PATH = path.resolve(ROOT_PATH, 'src')
@@ -52,8 +49,7 @@ let getEntries = () => {
     return obj
 }
 
-let entries = getEntries() // 打包入口
-let chunks = Object.keys(entries)   // 待提取公共模块
+let entries = getEntries() // 打包入口文件
 let pages = getFilesName('src/views/**/*.html') // html模版文件
 
 let config = {
@@ -61,7 +57,7 @@ let config = {
     output: {
         path: path.resolve(__dirname, 'static'), // 输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
         publicPath: '/', // 模板、样式、脚本、图片等资源对应的server上的路径
-        filename: 'js/[name].js', // 每个页面对应的主js的生成配置
+        filename: 'js/[name].js' // 每个页面对应的主js的生成配置
     },
     resolve: {
         //自动扩展文件后缀名，意味着我们require模块可以省略不写后缀名
@@ -89,11 +85,10 @@ let config = {
             // 处理less/css文件(从右到左依次调用less、css、style加载器，前一个的输出是后一个的输入)
             {
                 test: /\.(less|css)$/,
-                use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader']
-                // use: ExtractTextPlugin.extract({
-                //     fallback: 'style-loader',
-                //     use: ['css-loader', 'postcss-loader', 'less-loader']
-                // })
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader', 'postcss-loader', 'less-loader'
+                ]
             },
             /**
              * es6转码
@@ -155,35 +150,38 @@ let config = {
             $: 'jquery',
             jQuery: 'jquery'
         }),
-        // 提取公共模块
-        new webpack.optimize.SplitChunksPlugin({
-            chunks: "async",
-            minSize: 30000,
-            minChunks: 1,
-            maxAsyncRequests: 5,
-            maxInitialRequests: 3,
-            automaticNameDelimiter: '~',
-            name: true,
-            cacheGroups: {
-                vendors: {
-                    test: /[\\/]node_modules[\\/]/,
-                    name: "vendors",
-                    chunks: "all"
-                },
-                default: {
-                    minChunks: 2,
-                    priority: -20,
-                    reuseExistingChunk: true
-                }
-            }
-        }),
         // 单独使用link标签加载css并设置路径，相对于output配置中的publickPath
         new MiniCssExtractPlugin({
             filename: 'css/[name].css'
         }),
         // 热加载
         new webpack.HotModuleReplacementPlugin()
-    ]
+    ],
+    optimization: {
+        minimizer: [
+            new UglifyJsPlugin({
+                cache: true,
+                parallel: true,
+                sourceMap: false
+            })
+        ],
+        splitChunks: {
+            cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10
+                },
+                commons: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true,
+                }
+            }
+        },
+        runtimeChunk: {
+            name: 'manifest'
+        }
+    }
 }
 
 // 遍历html模版,自动将入口对应的打包文件引入
@@ -191,13 +189,14 @@ pages.forEach(function (fileName) {
     let setting = {
         filename: 'views/' + fileName + '.html', // 生成的html存放路径，相对于path
         template: 'src/views/' + fileName + '.html', // html模板路径
+        // chunksSortMode: true,
         inject: false // js插入的位置，true/'head'/'body'/false
-    };
+    }
 
     // (仅)有入口的模版自动引入资源
     if (fileName in config.entry) {
         setting.favicon = './src/assets/img/favicon.ico'
-        setting.chunks = ['vendors', 'default', fileName]
+        setting.chunks = ['vendors', 'commons', fileName]
         setting.inject = 'body'
         setting.hash = true
     }
@@ -206,34 +205,9 @@ pages.forEach(function (fileName) {
 
 // 生产环境配置
 if (isProduction) {
-    config.devtool = false  // 关闭source-map
+    // config.devtool = false  // 关闭source-map
     config.plugins.push(
-        // 代码压缩
-        // new UglifyJsPlugin({
-        //     uglifyOptions: {
-        //         parallel: true, // 使用多进程并行和文件缓存来提高构建速度
-        //         compress: {
-        //             drop_console: true,     // 删除所有的 `console` 语句
-        //             warnings: false          // 在删除没有用到的代码时不输出警告
-        //         },
-        //         output: {
-        //             beautify: false, // 不美化输出
-        //             comments: false   // 删除所有的注释
-        //         }
-        //     }
-        // }),
-        // 一些 library 可能针对具体用户的环境进行代码优化,从而删除或添加一些重要代码,所以添加这个配置
-        new webpack.DefinePlugin({
-            'process.env.NODE_ENV': JSON.stringify('production')
-        })
-    )
-    config.optimization.minimizer.push(
-        new UglifyJsPlugin({
-            cache: true,
-            parallel: true,
-            sourceMap: false
-        }),
-        new OptimizeCSSAssetsPlugin({}) // use OptimizeCSSAssetsPlugin
+        new CleanPlugin(['static'])
     )
 }
 
