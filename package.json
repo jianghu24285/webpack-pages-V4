@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "多页面webpack打包,自动扫描打包入口和html文件,模块化组织代码.",
   "main": "webpack.config.js",
-  "sideEffects": false,
   "scripts": {
     "test": "cross-env NODE_ENV=development webpack --mode development -w --colors --profile",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --colors --profile",
-    "build": "cross-env NODE_ENV=production webpack --mode production --colors --profile"
+    "build": "cross-env NODE_ENV=production webpack --mode production --colors --profile",
+    "server": "node prod.server.js"
   },
   "author": "Eleven",
   "license": "ISC",

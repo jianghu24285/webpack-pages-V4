@@ -3,7 +3,7 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-12 23:56:08
+ * @Last Modified time: 2018-07-13 14:22:58
  */
 
 const path = require('path')
@@ -159,19 +159,19 @@ let config = {
     ],
     optimization: {
         minimizer: [],
-        // splitChunks: {
-        //     cacheGroups: {
-        //         vendors: {
-        //             test: /[\\/]node_modules[\\/]/,
-        //             priority: -10
-        //         },
-        //         commons: {
-        //             minChunks: 2,
-        //             priority: -20,
-        //             reuseExistingChunk: true,
-        //         }
-        //     }
-        // },
+        splitChunks: {
+            cacheGroups: {
+                vendors: {
+                    test: /[\\/]node_modules[\\/]/,
+                    priority: -10
+                },
+                commons: {
+                    minChunks: 2,
+                    priority: -20,
+                    reuseExistingChunk: true,
+                }
+            }
+        },
         // runtimeChunk: {
         //     name: 'manifest'
         // }
@@ -183,14 +183,13 @@ pages.forEach(function (fileName) {
     let setting = {
         filename: 'views/' + fileName + '.html', // 生成的html存放路径，相对于path
         template: 'src/views/' + fileName + '.html', // html模板路径
-        // chunksSortMode: true,
         inject: false // js插入的位置，true/'head'/'body'/false
     }
 
     // (仅)有入口的模版自动引入资源
     if (fileName in config.entry) {
         setting.favicon = './src/assets/img/favicon.ico'
-        setting.chunks = [fileName]
+        setting.chunks = ['vendors', 'commons', fileName]
         setting.inject = 'body'
         setting.hash = true
     }
