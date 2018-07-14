@@ -18,34 +18,42 @@ npm run build
 ```
 
 ## 主要的依赖包
-```bash
+```json
 "devDependencies": {
     "autoprefixer": "^8.6.5",
     "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.4",
+    "babel-loader": "^7.1.5",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-2": "^6.24.1",
     "babel-runtime": "^6.26.0",
+    "clean-webpack-plugin": "^0.1.19",
     "cross-env": "^5.2.0",
-    "css-loader": "^0.28.11",
-    "cssnano": "^4.0.0",
-    "extract-text-webpack-plugin": "^3.0.2",
+    "css-loader": "^1.0.0",
+    "cssnano": "^4.0.1",
+    "exports-loader": "^0.7.0",
     "file-loader": "^1.1.11",
     "glob": "^7.1.2",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
-    "jquery": "^3.3.1",
-    "less": "^3.0.4",
-    "less-loader": "^4.1.0",****
+    "less": "^3.7.1",
+    "less-loader": "^4.1.0",
+    "mini-css-extract-plugin": "^0.4.1",
     "postcss-cssnext": "^3.1.0",
     "postcss-import": "^11.1.0",
-    "postcss-loader": "^2.1.5",
+    "postcss-loader": "^2.1.6",
+    "script-loader": "^0.7.2",
     "style-loader": "^0.21.0",
+    "uglifyjs-webpack-plugin": "^1.2.7",
     "url-loader": "^1.0.1",
-    "webpack": "^3.6.0",
-    "webpack-dev-server": "^2.9.7"
+    "webpack": "^4.16.0",
+    "webpack-cli": "^3.0.8",
+    "webpack-dev-server": "^3.1.4",
+    "webpack-merge": "^4.1.3"
+},
+"dependencies": {
+    "jquery": "^3.3.1"
 }
 ```
 
@@ -107,7 +115,7 @@ npm run build
 
 2. 在webpack.config.js同级目录新建.babelrc文件   
    
-   ```bash
+   ```json
    {
     "presets": [
       ["env", {
@@ -130,11 +138,11 @@ npm run build
    
    
    这种情况通过babel-polyfill解决 ( 参考文档: [babel-polyfill的作用?](https://blog.csdn.net/crazyfeeling/article/details/70241285), 以及[babel-polyfill的引用和使用](https://www.cnblogs.com/princesong/p/6728250.html) ), 安装好依赖以后, 并不会自动生效, 需要在js代码的第一行引入才行:   
-   ```bash
+   ```js
    import 'babel-polyfill' 或 require('babel-polyfill') 
    ```
    或者, 在webpack.config.js中, 改写entry对应的入口字符串值为数组, 'babel-polyfill'作为数组第一个元素 ( 不推荐 ):   
-   ```bash
+   ```js
    entry: {
         index: ['babel-polyfill', './src/js/pages/index.js']
     }
@@ -142,7 +150,7 @@ npm run build
 
 6. 为了提升转码的速度, 减少耗费的时间, 配置几个参数:    
    
-   ```bash
+   ```js
    {
       test: /\.js$/,
       loader: 'babel-loader',
@@ -165,25 +173,26 @@ npm run build
 
 2. 配置
    
-   *默认会将css一起打包到js里, 借助extract-text-webpack-plugin将css分离出来并自动在生成的html中link引入.*
+   *默认会将css一起打包到js里, 借助mini-css-extract-plugin将css分离出来并自动在生成的html中link引入.( 过去版本中的extract-text-webpack-plugin已不推荐使用 )*
 
-   ```bash
-   const ExtractTextPlugin = require('extract-text-webpack-plugin')
+   ```js
+   const MiniCssExtractPlugin = require('mini-css-extract-plugin')
    ```
    
-   ```bash
+   ```js
    {
         test: /\.(less|css)$/,
-        loader: ExtractTextPlugin.extract({
-            fallback: 'style-loader',
-          // # postcss-loader需要在less-loader之后执行, 在css-loader之前执行
-            use: ['css-loader', 'postcss-loader', 'less-loader']
-        })
+        use: [
+            MiniCssExtractPlugin.loader,
+            'css-loader', 'postcss-loader', 'less-loader'
+        ]
     }
    ```
-   ```bash
+   ```js
     // # 单独使用link标签加载css并设置路径，相对于output配置中的publickPath
-    new ExtractTextPlugin('css/[name].css')
+    new MiniCssExtractPlugin({
+        filename: 'css/[name].css'
+    })
    ```
 
 3. [PostCSS](https://www.webpackjs.com/loaders/postcss-loader/) 本身不会对你的 CSS 做任何事情, 你需要安装一些 plugins 才能开始工作.   
@@ -195,7 +204,7 @@ npm run build
 
     使用时在webpack.config.js同级目录新建postcss.config.js文件:
    
-   ```bash
+   ```js
    module.exports = {
       // parser: 'sugarss', # 一种更简洁的css语法格式
       plugins: {
@@ -226,7 +235,7 @@ npm run build
    1. css中引入的图片( 或其它资源 ) ==> url-loader   
    配置了url-loader以后, webpack编译时可以自动将小图转成base64编码, 将大图改写url并将文件生成到指定目录下 ( *file-loader可以完成文件生成, 但是不能小图转base64, 所以统一用url-loader, 但url-loader在处理大图的时候是自动去调用file-loader, 所以你仍然需要install file-loader* ).
       
-      ```bash
+      ```js
       // # 处理图片(雷同file-loader，更适合图片)
       {
           test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -258,7 +267,7 @@ npm run build
    2. html页面中引入的图片( 或其它资源 ) ==> html-loader   
    css中的图片url-loader处理即可, 而html中img标签引入的图片, 不做工作的情况下: 图片将不会被处理, 路径也不会被改写, 即最终编译完成后这部分图片是找不到的, 怎么办? [html-loader](https://www.webpackjs.com/loaders/html-loader/) ! ( *这个时候你应该是url-loader和html-loader都配置了, 所以css中图片、页面引入的图片、css中的字体文件、页面引入的多媒体文件等， 统统都会在编译时被处理* ).
       
-      ```bash
+      ```js
       // # html中引用的静态资源在这里处理,默认配置参数attrs=img:src,处理图片的src引用的资源.
       {
           test: /\.html$/,
@@ -275,7 +284,7 @@ npm run build
 
     3. 有的时候, 图片可能既不在css中, 也不在html中引入, 怎么办?   
 
-       ```bash   
+       ```js   
        import img from 'xxx/xxx/123.jpg'   
        或 let img = require('xxx/xxx/123.jpg')
        ```
@@ -285,7 +294,7 @@ npm run build
     经过上面的处理, 静态资源处理基本没有问题了, webpack编译时将会将文件打包到你指定的生成目录, 但是不同位置的图片路径改写会是一个问题.   
     *全部通过绝对路径访问即可, 在output下的publicPath填上适当的server端头, 来保证所有静态资源文件路径能被访问到, 具体要根据服务器部署的目录结构来做修改.*   
        
-       ```bash
+       ```js
        output: {
         path: path.resolve(__dirname, 'static'), // # 输出目录的配置，模板、样式、脚本、图片等资源的路径配置都相对于它
         publicPath: '/', // # 模板、样式、脚本、图片等资源对应的server上的路径
@@ -298,12 +307,12 @@ npm run build
    
    - [html-webpack-plugin](https://www.webpackjs.com/plugins/html-webpack-plugin/)插件, 配置:  
       
-      ```bash
+      ```js
       const HtmlWebpackPlugin = require('html-webpack-plugin')
       ```
 
       
-      ```bash
+      ```js
       new HtmlWebpackPlugin({
         favicon: './src/assets/img/favicon.ico', // # favicon路径，通过webpack引入同时可以生成hash值
         filename: './views/index.html', // # 生成的html存放路径，相对于path
@@ -331,11 +340,11 @@ npm run build
      ```bash
      npm i glob -D
      ```
-     ```bash
+     ```js
      const glob = require('glob')   
      ```
      b. 自动扫描获取入口文件, 定义工具函数过滤文件名和需要的传参.
-     ```bash
+     ```js
      /**
       * 获取文件名
       * @param {String} filesPath 文件目录
@@ -369,13 +378,13 @@ npm run build
       let pages = getFilesName('src/views/**/*.html') // # html模版文件
      ```
      c. webpack打包入口
-     ```bash
+     ```js
      module.exports = {
        entry: entries
      }
      ```
      d. html模版自动引入打包资源.
-     ```bash
+     ```js
      // # 遍历html模版,自动将入口对应的打包文件引入
       pages.forEach(function (fileName) {
           let setting = {
@@ -409,7 +418,7 @@ npm run build
 
    2. 配置
       
-      ```bash
+      ```js
       {
         test: require.resolve('zepto'),
         loader: 'exports-loader?window.Zepto!script-loader'
@@ -430,7 +439,7 @@ npm run build
   4. 拿到新的zepto包后, 建议放到自己的src下lib目录( 第三方工具包目录 ), 不再通过npm的方式去安装和更新zepto了 ( *因为将来npm update后的zepto又将缺少模块,将来别人也会出现误操作* ); 现在开始对这个放在lib目录下的zepto.min.js进行处理: 
      
      a) 通过script-loader、exports-loader转成符合webpack模块化规范的包
-     ```bash
+     ```js
      {
         // # require.resolve()是nodejs用来查找模块位置的发放,返回模块的入口文件
         test: require.resolve('./src/js/lib/zepto.min.js'),
@@ -439,7 +448,7 @@ npm run build
      ```
 
      b) 给模块配置别名
-     ```bash
+     ```js
      resolve: {
         alias: {
             'zepto': path.resolve(__dirname, './src/js/lib/zepto.min.js')
@@ -448,7 +457,7 @@ npm run build
      ```
 
      c) 自动加载模块, 不再到处import或require
-     ```bash
+     ```js
      new webpack.ProvidePlugin({
         $: 'zepto',
         Zepto: 'zepto'
@@ -461,16 +470,23 @@ npm run build
      平时意图使用某个包, 先去[NPM官网](https://www.npmjs.com/)搜一搜比较好.*
 
 <br><br>
+
+> 使用happypack来优化, 多进程运行webpack .
+   
+   - [webpack优化之HappyPack 实战](https://www.jianshu.com/p/b9bf995f3712)
+   - [happypack 原理解析](https://yq.aliyun.com/articles/67269)
+
+<br><br>
      
 > **配置开发服务器, [webpack-dev-server](https://www.webpackjs.com/configuration/dev-server/).**
    
    - 安装依赖包
       
-      ```
+      ```bash
       npm i webpack-dev-server -D
       ```
    - 常用配置
-      ```bash
+      ```js
       devServer: {
         contentBase: path.join(__dirname, 'static'),    // # 告诉服务器从哪里提供内容(默认当前工作目录)
         host: 'localhost',  // # 默认localhost,想外部可访问用'0.0.0.0'
@@ -486,7 +502,7 @@ npm run build
       ```
    - 运行命令 ( package.json配置命令 => npm run dev )
       ```bash
-      "dev": "webpack-dev-server --hot --inline --colors"
+      "dev": "cross-env NODE_ENV=development webpack-dev-server --mode development --colors --profile"
       ```
      *根据目录结构的不同, contentBase、openPage参数要配置合适的值, 否则运行时应该不会立刻访问到你的首页; 同时要注意你的publicPath, 静态资源打包后生成的路径是一个需要思考的点, 这与你的目录结构有关.*
      
@@ -496,7 +512,7 @@ npm run build
    
    1. 新建prod.server.js文件
       
-      ```bash
+      ```js
       let express = require('express')
       let compression = require('compression')
 
@@ -526,6 +542,27 @@ npm run build
        ```bash
        localhost:9898/views/
        ```
+
+<br><br>
+
+> **http-server, 比自己配置一个express服务更简洁的方式, 去访问打包后的资源.**
+  
+  1. 安装依赖
+     
+     ```bash
+     npm i http-server -D
+     ```
+  2. package.json配置命令
+     
+     ```json
+     "server": "http-server static"
+     ```
+  3. 访问路径
+     
+     ```bash
+     localhost:8080 或 http://127.0.0.1:8080 等.
+     ```
+     
 
 <br><br>
 
