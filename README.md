@@ -1,7 +1,7 @@
-# Webpack多页面打包
+# Webpack多页面打包实践 - 升级到webpack4
 
 > &emsp;&emsp;借助webpack搭建前端工程化、模块化开发, 十分喜欢Vue脚手架的配置, 简洁清晰, 所以大量参考vue-cli的webpack配置.   
-> &emsp;&emsp;这里webpack版本是3X, 做个存档, 4X再开一个新的. 除了webpack、gulp、grunt这几个自动化工具，[rollup](http://www.rollupjs.com/)、[parcel](http://www.css88.com/doc/parcel/) 也慢慢流行起来，有空来认真测试填坑.
+> &emsp;&emsp;这里webpack版本是4X, 与前面[Webpack多页面打包实践 - webapck 3X](https://github.com/Eleven90/webpack-pages-V3)相比, 区别在于splitChunk、mini-css-extract-plugin、optimization、mode参数的用途等各处改动；尤其splitChunk改动较大，暂时没有完全get到它的妙用。
     
 <br>
     
@@ -560,7 +560,7 @@ npm run build
   3. 访问路径
      
      ```bash
-     localhost:8080 或 http://127.0.0.1:8080 等.
+     localhost:8080 或 http://127.0.0.1:8080
      ```
      
 

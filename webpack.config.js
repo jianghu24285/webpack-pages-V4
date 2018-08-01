@@ -3,7 +3,7 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-15 01:06:52
+ * @Last Modified time: 2018-07-13 18:25:03
  */
 
 const path = require('path')
@@ -191,7 +191,7 @@ pages.forEach(function (fileName) {
     // (仅)有入口的模版自动引入资源
     if (fileName in config.entry) {
         setting.favicon = './src/assets/img/favicon.ico'
-        setting.chunks = ['vendors', 'commons', fileName]
+        setting.chunks = [fileName]
         setting.inject = 'body'
         setting.hash = true
     }
