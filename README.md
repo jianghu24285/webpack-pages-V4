@@ -477,6 +477,10 @@ npm run build
    - [happypack 原理解析](https://yq.aliyun.com/articles/67269)
 
 <br><br>
+
+> 使用[cache-loader](https://www.webpackjs.com/loaders/cache-loader/)缓存编译结果.
+
+<br><br>
      
 > **配置开发服务器, [webpack-dev-server](https://www.webpackjs.com/configuration/dev-server/).**
    

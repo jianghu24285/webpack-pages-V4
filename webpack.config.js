@@ -3,16 +3,19 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-08-22 16:04:45
+ * @Last Modified time: 2018-08-22 16:50:34
  */
 
 const path = require('path')
 const glob = require('glob')
+const os = require('os')
 const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const CleanPlugin = require('clean-webpack-plugin')
+const HappyPack = require('happypack')
+const HappyThreadPool = HappyPack.ThreadPool({size: os.cpus().length})
 
 const ROOT_PATH = path.resolve(__dirname)
 const SRC_PATH = path.resolve(ROOT_PATH, 'src')
@@ -85,27 +88,17 @@ let config = {
             // 处理less/css文件(从右到左依次调用less、css、style加载器，前一个的输出是后一个的输入)
             {
                 test: /\.(less|css)$/,
-                use: [
-                    'cache-loader',
-                    MiniCssExtractPlugin.loader,
-                    'css-loader', 'postcss-loader', 'less-loader'
-                ]
+                use: ['cache-loader', MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader']
             },
             /**
              * es6转码
              *  (npm install babel-core babel-loader babel-preset-env babel-plugin-transform-runtime babel-runtime babel-preset-stage-2 -D)
+             * 
+             * 将js处理交给happypack,多核多进程并发执行
              */
             {
                 test: /\.js$/,
-                use: [
-                    'cache-loader', 
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            cacheDirectory: true    // 缓存转码结果,提升编译速度
-                        }
-                    }
-                ],
+                loader: 'happypack/loader?id=happyBabel',
                 include: SRC_PATH,
                 exclude: /node_modules/ // 排除 node_modules中的文件，否则所有外部库都会通过babel编译，将会降低编译速度
             },
@@ -161,7 +154,14 @@ let config = {
             filename: 'css/[name].css'
         }),
         // 热加载
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        // 将js处理交给happypack
+        new HappyPack({
+            id: 'happyBabel',
+            loaders: ['cache-loader', 'babel-loader?cacheDirectory=true'],  // cacheDirectory缓存转码结果
+            threadPool: HappyThreadPool,
+            verbose: true   // 允许happypack输出日志
+        })
     ],
     optimization: {
         minimizer: [],
