@@ -3,7 +3,7 @@
  * @Author: Eleven 
  * @Date: 2018-07-03 00:17:01 
  * @Last Modified by: Eleven
- * @Last Modified time: 2018-07-13 18:25:03
+ * @Last Modified time: 2018-08-22 16:04:45
  */
 
 const path = require('path')
@@ -86,6 +86,7 @@ let config = {
             {
                 test: /\.(less|css)$/,
                 use: [
+                    'cache-loader',
                     MiniCssExtractPlugin.loader,
                     'css-loader', 'postcss-loader', 'less-loader'
                 ]
@@ -96,12 +97,17 @@ let config = {
              */
             {
                 test: /\.js$/,
-                loader: 'babel-loader',
+                use: [
+                    'cache-loader', 
+                    {
+                        loader: 'babel-loader',
+                        options: {
+                            cacheDirectory: true    // 缓存转码结果,提升编译速度
+                        }
+                    }
+                ],
                 include: SRC_PATH,
-                exclude: /node_modules/, // 排除 node_modules中的文件，否则所有外部库都会通过babel编译，将会降低编译速度
-                options: {
-                    cacheDirectory: true    // 缓存转码结果,提升编译速度
-                }
+                exclude: /node_modules/ // 排除 node_modules中的文件，否则所有外部库都会通过babel编译，将会降低编译速度
             },
             // html中引用的静态资源在这里处理,默认配置参数attrs=img:src,处理图片的src引用的资源.
             {
