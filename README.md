@@ -359,7 +359,7 @@ npm run build
               entry = files[i]
               extname = path.extname(entry) // 扩展名 eg: .html
               basename = path.basename(entry, extname) // 文件名 eg: index
-              entries.push(basename);
+              entries.push(basename)
           }
           return entries
       }
@@ -369,7 +369,7 @@ npm run build
           let obj = {}
 
           getFilesName('src/js/pages/**/*.js').forEach(fileName => {
-              obj[fileName] = './src/js/pages/' + fileName + '.js';
+              obj[fileName] = './src/js/pages/' + fileName + '.js'
           });
           return obj
       }
