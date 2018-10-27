@@ -576,3 +576,5 @@ npm run build
 - [基于webpack的前端工程化开发之多页站点篇（二）](https://segmentfault.com/a/1190000004516832)
 - [webpack在前端项目中使用心得一二](https://segmentfault.com/a/1190000009243487)
 - [NPM中文文档](https://www.npmjs.com.cn/getting-started/what-is-npm/)
+- [手摸手，带你用合理的姿势使用webpack4（上）](https://juejin.im/post/5b56909a518825195f499806)
+- [手摸手，带你用合理的姿势使用webpack4（下）](https://juejin.im/post/5b5d6d6f6fb9a04fea58aabc)
